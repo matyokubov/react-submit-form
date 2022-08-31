@@ -1,14 +1,91 @@
 import { Component } from "react"
 import Header from "./ANP/Components/Header"
+import Footer from "./ANP/Components/Footer"
 import { Box, InputsGroup, TextArea, UploadArea, FeaturedImage, Button, FileIcon, File, CheckboxList, SubmitBox } from "./ANP/Components/Generic/"
 import { Input } from "styled-inputs-mini"
 
 class App extends Component{
     state = {}
+    componentDidMount(){
+        if(localStorage.length !== 0) this.setState({token: localStorage.getItem("token")})
+        else {
+            let authToken = prompt("Your token:")
+            if(authToken){
+                localStorage.setItem("token", authToken)
+                this.setState({token: authToken})
+            }
+        }
+    }
     render(){
         console.log(this.state)
-        const onsubmit = () => {
+        const setImgPath = () => {
+            this.setState({imgPath: prompt("Enter image path:")})
+        }
+        const create = () => {
+            let houseDetails = {
+                address: this.state.friendly_address,
+                attachments: [
+                    {
+                        imgPath: this.state.imgPath
+                    }
+                ],
+                categoryId: this.state.property_id,
+                city: this.state.parent_property,
+                componentsDto: {
+                    additional: "string",
+                    airCondition: this.state.air_conditioning === "on" ? true : false,
+                    courtyard: true,
+                    furniture: true,
+                    gasStove: true,
+                    internet: true,
+                    tv: true
+                },
+                country: this.state.regions,
+                description: this.state.property_description,
+                homeAmenitiesDto: {
+                    additional: "string",
+                    busStop: true,
+                    garden: true,
+                    market: true,
+                    park: true,
+                    parking: true,
+                    school: true,
+                    stadium: true,
+                    subway: true,
+                    superMarket: true
+                },
+                houseDetails: {
+                    area: this.state.home_area,
+                    bath: this.state.baths,
+                    beds: this.state.beds,
+                    garage: this.state.garages,
+                    room: this.state.rooms,
+                    yearBuilt: this.state.year_build
+                },
+                locations: {
+                    latitude: this.state.latidude,
+                    longitude: this.state.logtitude
+                },
+                name: this.state.title,
+                price: this.state.price,
+                region: this.state.regions,
+                salePrice: this.state.price_custom,
+                status: true,
+                zipCode: "1"
+            }
+            console.log(houseDetails, JSON.stringify(houseDetails));
+            fetch("https://houzing-app.herokuapp.com/api/v1/houses", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(houseDetails)
+            })
+        }
+        const onSubmit = () => {
             console.log(this.state)
+            create()
         }
         const setProperties = ({target}) => {
             this.setState({[target.name]: target.value})
@@ -85,13 +162,13 @@ class App extends Component{
                             <FeaturedImage/>
                         </div>
                         <div>
-                            <Button>Upload</Button>
+                            <Button onClick={setImgPath}>Upload</Button>
                         </div>
                     </UploadArea>
                     <UploadArea>
                         <span>Gallery</span>
                         <div>
-                            <Button>Upload</Button>
+                            <Button onClick={setImgPath}>Upload</Button>
                         </div>
                     </UploadArea>
                     <UploadArea>
@@ -101,7 +178,7 @@ class App extends Component{
                             test_property.pdf
                         </File>
                         <div>
-                            <Button>Upload</Button>
+                            <Button onClick={setImgPath}>Upload</Button>
                         </div>
                     </UploadArea>
                     <InputsGroup>
@@ -176,9 +253,10 @@ class App extends Component{
                     </InputsGroup>
                 </Box>
                 <SubmitBox>
-                    <button type="submit" onClick={onsubmit}>Submit</button>
+                    <button type="submit" onClick={onSubmit}>Submit</button>
                 </SubmitBox>
             </div>
+            <Footer/>
         </div>
     }
 }
